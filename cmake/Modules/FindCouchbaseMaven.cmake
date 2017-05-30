@@ -11,8 +11,12 @@ IF (NOT FindCouchbaseMaven_INCLUDED)
     MESSAGE (STATUS "Found Maven executable: ${MAVEN_EXECUTABLE}")
     SET (MAVEN_FOUND True CACHE BOOL "Whether Maven has been found")
 
+    SET (CB_INVOKE_MAVEN False CACHE BOOL "Whether to add Maven targets to ALL")
+
     # Create a target to build a Maven project from a specified directory.
-    # Since Maven is slow and painful, this target will not be added to ALL.
+    # Since Maven is slow and painful and in particular has terrible
+    # incremental build ability, this target will not be added to ALL
+    # unless the build parameter CB_INVOKE_MAVEN is True.
     #
     # Since it's not in ALL, using INSTALL() is probably a bad idea. As a
     # workaround, this macro allows you to specify a single directory of
@@ -29,6 +33,8 @@ IF (NOT FindCouchbaseMaven_INCLUDED)
     #   ARTIFACTS - path (relative to PATH) to directory containing
     #               artifacts to install
     #   DESTINATION - path (relative to CMAKE_INSTALL_DIR) to install ARTIFACTS
+    #                 (must be specified if ARTIFACTS is specified, and must
+    #                 contain a slash to prevent eg. blowing away "lib")
 
     MACRO (MAVEN_PROJECT)
       PARSE_ARGUMENTS (Mvn "" "TARGET;PATH;ARTIFACTS;DESTINATION" "" ${ARGN})
@@ -36,14 +42,18 @@ IF (NOT FindCouchbaseMaven_INCLUDED)
         SET (Mvn_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
       ENDIF ()
 
-      # We don't add Maven projects to the "all" target because Maven
-      # is kind of terrible and slow, and makes incremental builds painful
       MESSAGE (STATUS "Adding Maven project target '${Mvn_TARGET}'")
       IF (NOT "${Mvn_ARTIFACTS}" STREQUAL "")
+        STRING (FIND "${Mvn_DESTINATION}" "/" _pos)
+        IF (_pos LESS 0)
+          MESSAGE (FATAL_ERROR "Must specify DESTINATION (containing a '/') if ARTIFACTS specified")
+        ENDIF ()
         ADD_CUSTOM_TARGET ("${Mvn_TARGET}-install"
+          COMMAND "${CMAKE_COMMAND}" -E remove_directory
+            "${CMAKE_INSTALL_PREFIX}/${Mvn_DESTINATION}"
           COMMAND "${CMAKE_COMMAND}" -E copy_directory
-          "${Mvn_PATH}/${Mvn_ARTIFACTS}"
-          "${CMAKE_INSTALL_PREFIX}/${Mvn_DESTINATION}"
+            "${Mvn_PATH}/${Mvn_ARTIFACTS}"
+            "${CMAKE_INSTALL_PREFIX}/${Mvn_DESTINATION}"
           COMMENT "Installing artifacts for Maven project ${Mvn_TARGET}"
           VERBATIM)
       ENDIF ()
@@ -52,7 +62,11 @@ IF (NOT FindCouchbaseMaven_INCLUDED)
         WORKING_DIRECTORY "${Mvn_PATH}"
         COMMENT "Building Maven project ${Mvn_TARGET}"
         VERBATIM)
-      ADD_CUSTOM_TARGET ("${Mvn_TARGET}")
+      SET (_all "")
+      IF (CB_INVOKE_MAVEN)
+        SET (_all "ALL")
+      ENDIF ()
+      ADD_CUSTOM_TARGET ("${Mvn_TARGET}" ${_all})
       IF (TARGET "${Mvn_TARGET}-install")
         ADD_DEPENDENCIES ("${Mvn_TARGET}-install" "${Mvn_TARGET}-build")
         ADD_DEPENDENCIES ("${Mvn_TARGET}" "${Mvn_TARGET}-install")

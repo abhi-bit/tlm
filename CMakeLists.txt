@@ -83,20 +83,20 @@ ADD_SUBDIRECTORY(tlm/deps)
 
 INCLUDE(CouchbaseDefaultValues)
 
-IF ("" STREQUAL "${BUILD_ENTERPRISE}")
-   SET(CB_BUILD_TYPE "Community Edition")
-   SET(CB_ENTERPRISE_EDITION False CACHE BOOL "Building enterprise edition")
-ELSE ("" STREQUAL "${BUILD_ENTERPRISE}")
-   SET(CB_BUILD_TYPE "Enterprise Edition")
-   SET(CB_ENTERPRISE_EDITION True CACHE BOOL "Building enterprise edition")
-ENDIF ("" STREQUAL "${BUILD_ENTERPRISE}")
+# If the user has synced any closed-source code, assume building EE
+IF (EXISTS "${PROJECT_SOURCE_DIR}/goproj/src/github.com/couchbase/backup")
+  SET (_ee_found ON)
+ELSE ()
+  SET (_ee_found OFF)
+ENDIF()
+OPTION (BUILD_ENTERPRISE "Building Enterprise Edition" ${_ee_found})
 
 # Build 'developer builds' by default
-OPTION (CB_DEVELOPER_BUILD "Produce Developer builds" True)
+OPTION (CB_DEVELOPER_BUILD "Produce Developer builds" ON)
 
 MESSAGE(STATUS "Using cmake version: ${CMAKE_VERSION}")
 MESSAGE(STATUS "Installing to ${CMAKE_INSTALL_PREFIX}")
-MESSAGE(STATUS "Build type: ${CMAKE_BUILD_TYPE} (${CB_BUILD_TYPE})")
+MESSAGE(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 INCLUDE(CouchbaseAddressSanitizer)
 INCLUDE(CouchbaseAsciiDocs)
@@ -122,18 +122,28 @@ INCLUDE(FindCouchbaseV8)
 INCLUDE(FindCouchbaseNlohmannJson)
 INCLUDE(FindCouchbaseMaven)
 
+# Declare PRODUCT_VERSION in cache, but then override user-defined value
+# if it is an empty string
+SET (PRODUCT_VERSION "" CACHE STRING "Product version with build number")
 IF ("${PRODUCT_VERSION}" STREQUAL "")
   IF (PYTHON_EXECUTABLE)
     # Try to determine product version from manifest
     EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} tlm/scripts/get_version.py
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-      OUTPUT_VARIABLE PRODUCT_VERSION
+      OUTPUT_VARIABLE _product_version
       ERROR_QUIET
       OUTPUT_STRIP_TRAILING_WHITESPACE)
   ELSE (PYTHON_EXECUTABLE)
-    SET(PRODUCT_VERSION "0.0.0-9999")
+    SET(_product_version "0.0.0-9999")
   ENDIF (PYTHON_EXECUTABLE)
+  SET (PRODUCT_VERSION ${_product_version} CACHE STRING "Product version with build number" FORCE)
 ENDIF ("${PRODUCT_VERSION}" STREQUAL "")
+
+IF (BUILD_ENTERPRISE)
+  MESSAGE (STATUS "Building Couchbase Server ${PRODUCT_VERSION} Enterprise Edition")
+ELSE ()
+  MESSAGE (STATUS "Building Couchbase Server ${PRODUCT_VERSION} Community Edition")
+ENDIF ()
 
 IF (WIN32)
    SET(COUCHBASE_NETWORK_LIBS "Ws2_32")
@@ -186,7 +196,7 @@ ENDIF (PHOSPHOR_DISABLE)
 
 ADD_SUBDIRECTORY(platform)
 ADD_SUBDIRECTORY(subjson)
-ADD_SUBDIRECTORY(memcached)
+ADD_SUBDIRECTORY(kv_engine/include)
 ADD_SUBDIRECTORY(couchstore)
 IF (NOT COUCHBASE_KV_COMMIT_VALIDATION)
     ADD_SUBDIRECTORY(forestdb)
@@ -195,7 +205,7 @@ IF (NOT COUCHBASE_KV_COMMIT_VALIDATION)
     GET_FILENAME_COMPONENT (FORESTDB_LIBRARY_DIR "${_dir}" PATH)
     SET (FORESTDB_TARGET forestdb)
 ENDIF()
-ADD_SUBDIRECTORY(ep-engine)
+ADD_SUBDIRECTORY(kv_engine)
 ADD_SUBDIRECTORY(sigar)
 ADD_SUBDIRECTORY(moxi)
 
@@ -234,7 +244,7 @@ IF (NOT COUCHBASE_KV_COMMIT_VALIDATION)
       ADD_SUBDIRECTORY (analytics)
     ENDIF ()
 
-    IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/goproj/src/github.com/couchbase/backup")
+    IF (BUILD_ENTERPRISE AND EXISTS "${PROJECT_SOURCE_DIR}/goproj/src/github.com/couchbase/backup")
       ADD_SUBDIRECTORY(goproj/src/github.com/couchbase/backup)
     ENDIF()
 ENDIF (NOT COUCHBASE_KV_COMMIT_VALIDATION)

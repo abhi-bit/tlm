@@ -163,11 +163,10 @@ _ADD_DEP_PACKAGE(python-snappy c97d633 c97d633 1)
 _ADD_DEP_PACKAGE(icu4c 54.1 r54.1 10)
 _ADD_DEP_PACKAGE(libevent 2.1.8 release-2.1.8-stable-cb 2)
 _ADD_DEP_PACKAGE(v8 5.2 5.2-couchbase 2)
-_ADD_DEP_PACKAGE(jemalloc 4.3.1 4.3.1 1)
+_ADD_DEP_PACKAGE(jemalloc 4.3.1 4.3.1 2)
 _ADD_DEP_PACKAGE(curl 7.49.1 curl-7_49_1 1)
 
 # erlang R16B03-couchbase / branch: couchbase-watson
-<<<<<<< HEAD
 # - SHA 96430ba for R16B03-couchbase-cb1 release
 # - SHA 00852da for R16B03-couchbase-cb2 release
 # - SHA 1f768b7 for R16B03-1-couchbase-cb2 release (Windows only)
@@ -183,4 +182,7 @@ _ADD_DEP_PACKAGE(boost 1.62.0 v1.62.0 3)
 IF (APPLE)
   _ADD_DEP_PACKAGE(openssl_h 0.9.8za 0.9.8za 1)
 ENDIF ()
+IF (WIN32)
+  _ADD_DEP_PACKAGE(openssl 1.0.2k OpenSSL_1_0_2k 1)
+ENDIF (WIN32)
 _ADD_DEP_PACKAGE(libcouchbase 2.7.2 2.7.2 1)
