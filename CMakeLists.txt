@@ -84,7 +84,7 @@ ADD_SUBDIRECTORY(tlm/deps)
 INCLUDE(CouchbaseDefaultValues)
 
 # If the user has synced any closed-source code, assume building EE
-IF (EXISTS "${PROJECT_SOURCE_DIR}/goproj/src/github.com/couchbase/backup")
+IF (EXISTS "${PROJECT_SOURCE_DIR}/goproj/src/github.com/couchbase/eventing")
   SET (_ee_found ON)
 ELSE ()
   SET (_ee_found OFF)
