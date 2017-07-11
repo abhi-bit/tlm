@@ -14,8 +14,12 @@ string(REPLACE ";" " " GYP_FLAGS "${_gyp_flags}")
 
 if (APPLE)
    SET(V8_LIBRARY_FILE "<SOURCE_DIR>/out/x64.release/libv8.dylib")
+   SET(V8BASE_LIBRARY_FILE "<SOURCE_DIR>/out/x64.release/lib.target/libv8_libbase.dylib")
+   SET(V8PLATFORM_LIBRARY_FILE "<SOURCE_DIR>/out/x64.release/lib.target/libv8_libplatform.dylib")
 else (APPLE)
    SET(V8_LIBRARY_FILE "<SOURCE_DIR>/out/x64.release/lib.target/libv8.so")
+   SET(V8BASE_LIBRARY_FILE "<SOURCE_DIR>/out/x64.release/lib.target/libv8_libbase.so")
+   SET(V8PLATFORM_LIBRARY_FILE "<SOURCE_DIR>/out/x64.release/lib.target/libv8_libplatform.so")
    SET(GYP_FLAGS "${GYP_FLAGS} -Dclang=0")
 
    if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -119,12 +123,15 @@ ELSE (WIN32)
   # Extra command to perform only on Mac
   IF (APPLE)
     SET (TWEAK_DYLIB
-      COMMAND install_name_tool -id @rpath/libv8.dylib <SOURCE_DIR>/out/x64.release/libv8.dylib)
+      COMMAND install_name_tool -id @rpath/libv8.dylib <SOURCE_DIR>/out/x64.release/libv8.dylib
+      COMMAND install_name_tool -id @rpath/libv8_libbase.dylib <SOURCE_DIR>/out/x64.release/libv8_libbase.dylib
+      COMMAND install_name_tool -id @rpath/libv8_libplatform.dylib <SOURCE_DIR>/out/x64.release/libv8_libplatform.dylib
+    )
   ENDIF (APPLE)
 
   ExternalProject_Add(v8
-    GIT_REPOSITORY ${_git_repo}
-    GIT_TAG ${_git_rev}
+    GIT_REPOSITORY "git://github.com/hsharsha/v8.git"
+    GIT_TAG "5.9-couchbase"
     BUILD_IN_SOURCE 1
 
     CONFIGURE_COMMAND cd <SOURCE_DIR>/build
@@ -136,13 +143,17 @@ ELSE (WIN32)
 
     INSTALL_COMMAND mkdir -p <INSTALL_DIR>/lib/Release <INSTALL_DIR>/lib/Debug <INSTALL_DIR>/include
     COMMAND ${CMAKE_COMMAND} -E copy ${V8_LIBRARY_FILE} <INSTALL_DIR>/lib/Release
+    COMMAND ${CMAKE_COMMAND} -E copy ${V8BASE_LIBRARY_FILE} <INSTALL_DIR>/lib/Release
+    COMMAND ${CMAKE_COMMAND} -E copy ${V8PLATFORM_LIBRARY_FILE} <INSTALL_DIR>/lib/Release
     COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/include <INSTALL_DIR>/include
     COMMAND ${CMAKE_COMMAND} -E remove -f <INSTALL_DIR>/include/OWNERS
 
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${V8_LIBRARY_FILE}
+    COMMAND ${CMAKE_COMMAND} -E remove -f <SOURCE_DIR>/out
     COMMAND $(MAKE) -j${_parallelism} x64.release GYPFLAGS+=${GYP_FLAGS} GYPFLAGS+="-Drelease_extra_cflags=-ggdb3" CFLAGS+=-DDEBUG CPPFLAGS+=-DDEBUG PYTHONPATH=<SOURCE_DIR>/third_party/argparse-1.4.0
     ${TWEAK_DYLIB}
     COMMAND ${CMAKE_COMMAND} -E copy ${V8_LIBRARY_FILE} <INSTALL_DIR>/lib/Debug
+    COMMAND ${CMAKE_COMMAND} -E copy ${V8BASE_LIBRARY_FILE} <INSTALL_DIR>/lib/Debug
+    COMMAND ${CMAKE_COMMAND} -E copy ${V8PLATFORM_LIBRARY_FILE} <INSTALL_DIR>/lib/Debug
 
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists_package.txt <INSTALL_DIR>/CMakeLists.txt
 )
@@ -151,7 +162,7 @@ ENDIF (WIN32)
 
 # Add icu from couchbasedps/icu4c.git
 ExternalProject_Add_Step(v8 get_icu
-  COMMAND cd <SOURCE_DIR>/third_party/icu && git clone git://github.com/couchbasedeps/icu4c.git -b r54.1
+  COMMAND cd <SOURCE_DIR>/third_party/icu && git clone git://github.com/hsharsha/icu4c.git -b r56.1
   COMMAND ${CMAKE_COMMAND} -E make_directory <SOURCE_DIR>/third_party/icu/source
   COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/third_party/icu/icu4c/source <SOURCE_DIR>/third_party/icu/source
   COMMAND ${CMAKE_COMMAND} -E remove_directory <SOURCE_DIR>/third_party/icu/icu4c

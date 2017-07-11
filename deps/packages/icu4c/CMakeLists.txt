@@ -13,8 +13,8 @@ endif (APPLE)
 ### Download, configure and build icu4c ####################################
 _DETERMINE_CPU_COUNT(_parallelism)
 ExternalProject_Add(icu4c
-  GIT_REPOSITORY ${_git_repo}
-  GIT_TAG ${_git_rev}
+  GIT_REPOSITORY "git://github.com/hsharsha/icu4c.git"
+  GIT_TAG "r56.1"
 
  CONFIGURE_COMMAND <SOURCE_DIR>/source/configure LDFLAGS=${ICU_LDFLAGS}
                                                   --prefix=<INSTALL_DIR>
