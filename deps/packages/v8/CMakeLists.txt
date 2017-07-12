@@ -124,8 +124,6 @@ ELSE (WIN32)
   IF (APPLE)
     SET (TWEAK_DYLIB
       COMMAND install_name_tool -id @rpath/libv8.dylib <SOURCE_DIR>/out/x64.release/libv8.dylib
-      COMMAND install_name_tool -id @rpath/libv8_libbase.dylib <SOURCE_DIR>/out/x64.release/libv8_libbase.dylib
-      COMMAND install_name_tool -id @rpath/libv8_libplatform.dylib <SOURCE_DIR>/out/x64.release/libv8_libplatform.dylib
     )
   ENDIF (APPLE)
 

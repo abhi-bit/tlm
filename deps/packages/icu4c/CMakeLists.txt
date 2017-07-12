@@ -39,24 +39,24 @@ ExternalProject_Add(icu4c
 if (APPLE)
   ExternalProject_Add_Step(icu4c install_name
     # Fixup all libraries
-    COMMAND install_name_tool -id @rpath/libicudata.54.1.dylib lib/libicudata.54.1.dylib
-    COMMAND install_name_tool -id @rpath/libicui18n.54.1.dylib
-                              -change libicuuc.54.dylib @loader_path/libicuuc.54.dylib
-                              -change libicudata.54.dylib @loader_path/libicudata.54.dylib
-                              lib/libicui18n.54.1.dylib
-    COMMAND install_name_tool -id @rpath/libicuio.54.1.dylib
-                              -change libicuuc.54.dylib @loader_path/libicuuc.54.dylib
-                              -change ../lib/libicudata.54.1.dylib @loader_path/libicudata.54.1.dylib
-                              -change libicui18n.54.dylib @loader_path/ibicui18n.54.dylib
-                              lib/libicuio.54.1.dylib
-    COMMAND install_name_tool -id @rpath/libicutu.54.1.dylib
-                              -change libicui18n.54.dylib @loader_path/libicui18n.54.dylib
-                              -change libicuuc.54.dylib @loader_path/libicuuc.54.dylib
-                              -change libicudata.54.dylib @loader_path/libicudata.54.dylib
-                              lib/libicutu.54.1.dylib
-    COMMAND install_name_tool -id @rpath/libicuuc.54.1.dylib
-                              -change libicudata.54.dylib @loader_path/libicudata.54.dylib
-                              lib/libicuuc.54.1.dylib
+    COMMAND install_name_tool -id @rpath/libicudata.56.1.dylib lib/libicudata.56.1.dylib
+    COMMAND install_name_tool -id @rpath/libicui18n.56.1.dylib
+                              -change libicuuc.56.dylib @loader_path/libicuuc.56.dylib
+                              -change libicudata.56.dylib @loader_path/libicudata.56.dylib
+                              lib/libicui18n.56.1.dylib
+    COMMAND install_name_tool -id @rpath/libicuio.56.1.dylib
+                              -change libicuuc.56.dylib @loader_path/libicuuc.56.dylib
+                              -change ../lib/libicudata.56.1.dylib @loader_path/libicudata.56.1.dylib
+                              -change libicui18n.56.dylib @loader_path/ibicui18n.56.dylib
+                              lib/libicuio.56.1.dylib
+    COMMAND install_name_tool -id @rpath/libicutu.56.1.dylib
+                              -change libicui18n.56.dylib @loader_path/libicui18n.56.dylib
+                              -change libicuuc.56.dylib @loader_path/libicuuc.56.dylib
+                              -change libicudata.56.dylib @loader_path/libicudata.56.dylib
+                              lib/libicutu.56.1.dylib
+    COMMAND install_name_tool -id @rpath/libicuuc.56.1.dylib
+                              -change libicudata.56.dylib @loader_path/libicudata.56.dylib
+                              lib/libicuuc.56.1.dylib
     DEPENDEES build
     DEPENDERS install
     WORKING_DIRECTORY <BINARY_DIR>

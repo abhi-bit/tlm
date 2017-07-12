@@ -9,8 +9,9 @@ SET(_v8_exploded ${CMAKE_BINARY_DIR}/tlm/deps/v8.exploded)
 # V8 inlcudes libplatform/libplatform.h which includes another header as
 # `#include <include/v8-platform.h>`. To allow this inclusion we are setting
 # V8_INCLUDE_DIR path up until include directory
-FIND_PATH(V8_INCLUDE_DIR include/v8.h
+FIND_PATH(V8_INCLUDE_DIR v8.h
           HINTS ${_v8_exploded}
+          PATH_SUFFIXES include
           PATHS
               ~/Library/Frameworks
               /Library/Frameworks

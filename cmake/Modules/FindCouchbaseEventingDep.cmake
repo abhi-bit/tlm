@@ -1,5 +1,7 @@
-FIND_PATH(LIBCOUCHBASE_INCLUDE_DIR n1ql.h
-          PATH_SUFFIXES libcouchbase
+SET(_libcouchbase_exploded ${CMAKE_BINARY_DIR}/tlm/deps/libcouchbase.exploded)
+FIND_PATH(LIBCOUCHBASE_INCLUDE_DIR libcouchbase/n1ql.h
+          HINTS ${_libcouchbase_exploded}
+          PATH_SUFFIXES include
           PATHS
                ~/Library/Frameworks
                /Library/Frameworks
@@ -11,6 +13,7 @@ FIND_PATH(LIBCOUCHBASE_INCLUDE_DIR n1ql.h
 
 FIND_LIBRARY( LIBCOUCHBASE_LIBRARIES
               NAMES couchbase libcoucbase
+               HINTS ${CMAKE_INSTALL_PREFIX}/lib
              PATH_SUFFIXES lib
              PATHS
                  ~/Library/Frameworks
